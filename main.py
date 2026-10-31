@@ -7,9 +7,9 @@ Usage:
 
 Behavior:
   * Sends a status message immediately on startup.
-  * While running on battery power: sends a status message every 10 seconds.
+  * While running on battery power: sends a status message every minute.
   * While plugged in: stays silent, EXCEPT when the battery transitions
-    from <95% to >=95% (i.e. "charged to >95%").
+    from <95% to >=95% (i.e. "charged to >95%")
 """
 
 import sys
@@ -19,7 +19,8 @@ import psutil
 import requests
 
 INTERVAL = 60          # seconds between polls
-CHARGE_THRESHOLD = 95  # ">95%"
+CRITICAL_THRESHOLD = 20
+CHARGE_THRESHOLD = 95
 
 
 # --------------------------------------------------------------------------- #
@@ -36,9 +37,9 @@ def get_battery():
 
 def format_status(bat):
     if bat is None:
-        return "⚠️ **No battery detected** (or battery info is unavailable on this system)."
+        return "[!!] **No battery detected** (or battery info is unavailable on this system)."
 
-    state = "🔌 Plugged in / charging" if bat.power_plugged else "🔋 Running on battery"
+    state = "[OK] Plugged in / charging" if bat.power_plugged else "[!!] Battery critical" if bat.percent < CRITICAL_THRESHOLD else "[--] Running on battery"
 
     secs = bat.secsleft
     if secs == getattr(psutil, "POWER_TIME_UNLIMITED", -2):
